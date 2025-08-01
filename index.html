@@ -140,47 +140,56 @@
   <div id="listings"></div>
 
   <script>
-  const SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyhwevZ0Hy6jq0Nw-HKSg4g9ZTI-aWNJ9vsMTyo1GURstQjB8WNfOvk3Vo786KQBwdESQ/exec";
+const SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyhwevZ0Hy6jq0Nw-HKSg4g9ZTI-aWNJ9vsMTyo1GURstQjB8WNfOvk3Vo786KQBwdESQ/exec";
 
-  async function loadListings() {
-    try {
-      const response = await fetch(SHEET_WEB_APP_URL);
-      const listings = await response.json();
+async function loadListings() {
+  try {
+    const response = await fetch(SHEET_WEB_APP_URL);
+    const listings = await response.json();
 
-      const container = document.getElementById('listings');
-      container.innerHTML = '';
+    const container = document.getElementById('listings');
+    container.innerHTML = '';
 
-      listings.forEach(listing => {
-        const detailsArray = listing.details.split(',').map(item => `<li>${item.trim()}</li>`).join('');
-        const imageGallery = listing.images.split(',').map(src => `<img src="${src.trim()}" onclick="openImage('${src.trim()}')">`).join('');
+    listings.forEach(listing => {
+      const detailsArray = listing.details
+        ? listing.details.split(',').map(item => `<li>${item.trim()}</li>`).join('')
+        : '';
 
-        const videoEmbed = listing.video
-          ? `<div class="video"><iframe src="${listing.video}" allowfullscreen></iframe></div>`
-          : '';
+      const imageGallery = listing.imageurls
+        ? listing.imageurls.split(',').map(src => `<img src="${src.trim()}" onclick="openImage('${src.trim()}')">`).join('')
+        : '';
 
-        const html = `
-          <div class="listing">
-            <h2>${listing.title}</h2>
-            <ul class="details">${detailsArray}</ul>
-            <div class="images">${imageGallery}</div>
-            ${videoEmbed}
-          </div>
-        `;
-        container.innerHTML += html;
-      });
-    } catch (error) {
-      console.error("Error loading listings:", error);
-      document.getElementById('listings').innerHTML = "<p>Failed to load listings.</p>";
-    }
+      const videoEmbed = listing.videourl && listing.videourl.trim()
+        ? `<div class="video"><video src="${listing.videourl.trim()}" controls></video></div>`
+        : '';
+
+      const html = `
+        <div class="listing">
+          <h2>${listing.title}</h2>
+          <ul class="details">${detailsArray}</ul>
+          <div class="images">${imageGallery}</div>
+          ${videoEmbed}
+        </div>
+      `;
+      container.innerHTML += html;
+    });
+  } catch (error) {
+    console.error("Error loading listings:", error);
+    document.getElementById('listings').innerHTML = "<p>Failed to load listings.</p>";
   }
+}
 
-  function openImage(src) {
-    const win = window.open();
-    win.document.write(`<img src="${src}" style="width:100%">`);
-  }
+function openImage(src) {
+  const win = window.open();
+  win.document.write(`<img src="${src}" style="width:100%">`);
+}
 
-  loadListings();
+loadListings();
 </script>
+
+</body>
+</html>
+
 
 
 </body>
