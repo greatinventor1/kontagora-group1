@@ -140,24 +140,19 @@
   <div id="listings"></div>
 
   <script>
-    const STORAGE_KEY = "yaHomesListings";
-    let allListings = [];
+  const SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyhwevZ0Hy6jq0Nw-HKSg4g9ZTI-aWNJ9vsMTyo1GURstQjB8WNfOvk3Vo786KQBwdESQ/exec";
 
-    function loadListings() {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (!saved) return;
+  async function loadListings() {
+    try {
+      const response = await fetch(SHEET_WEB_APP_URL);
+      const listings = await response.json();
 
-      allListings = JSON.parse(saved);
-      renderListings(allListings);
-    }
-
-    function renderListings(listings) {
       const container = document.getElementById('listings');
       container.innerHTML = '';
 
       listings.forEach(listing => {
         const detailsArray = listing.details.split(',').map(item => `<li>${item.trim()}</li>`).join('');
-        const imageGallery = listing.images.map(src => `<img src="${src}" onclick="openImage('${src}')">`).join('');
+        const imageGallery = listing.images.split(',').map(src => `<img src="${src.trim()}" onclick="openImage('${src.trim()}')">`).join('');
 
         const videoEmbed = listing.video
           ? `<div class="video"><iframe src="${listing.video}" allowfullscreen></iframe></div>`
@@ -171,26 +166,24 @@
             ${videoEmbed}
           </div>
         `;
-
         container.innerHTML += html;
       });
+    } catch (error) {
+      console.error("Error loading listings:", error);
+      document.getElementById('listings').innerHTML = "<p>Failed to load listings.</p>";
     }
+  }
 
-    function filterListings() {
-      const query = document.getElementById('search').value.toLowerCase();
-      const filtered = allListings.filter(listing =>
-        listing.title.toLowerCase().includes(query) ||
-        listing.details.toLowerCase().includes(query)
-      );
-      renderListings(filtered);
-    }
+  function openImage(src) {
+    const win = window.open();
+    win.document.write(`<img src="${src}" style="width:100%">`);
+  }
 
-    function openImage(src) {
-      const win = window.open();
-      win.document.write(`<img src="${src}" style="width:100%">`);
-    }
+  loadListings();
+</script>
 
-    loadListings();
-  </script>
+
 </body>
+</html>
+
 </html>
