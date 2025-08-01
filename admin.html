@@ -1,0 +1,186 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kontagora Group Admin</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 40px;
+      max-width: 700px;
+    }
+    input, textarea {
+      width: 100%;
+      margin-bottom: 15px;
+      padding: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      background: #FF8C00;
+      border: none;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    #form-section {
+      display: none;
+    }
+    h1 {
+      color: #333;
+    }
+    .warning {
+      color: #717171;
+      font-size: 0.9em;
+    }
+    .listing {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 20px;
+      border-radius: 6px;
+    }
+    .listing h3 {
+      margin: 0 0 5px;
+    }
+    .delete-btn {
+      background-color: crimson;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>KONTAGORA GROUP – Admin Panel</h1>
+  <div id="password-section">
+    <p><strong>Enter Admin Password:</strong></p>
+    <input type="password" id="admin-password" placeholder="Password" />
+    <button onclick="checkPassword()">Enter</button>
+  </div>
+
+  <div id="form-section">
+    <p class="warning">Visitors cannot access this page. You can post listings below.</p>
+    <input type="text" id="title" placeholder="Title (e.g. 2 Bedroom Flat in Lekki)">
+    <textarea id="details" placeholder="Details (comma-separated)"></textarea>
+    <textarea id="images" placeholder="Image URLs (comma-separated)"></textarea>
+    <input type="text" id="video" placeholder="YouTube, video URL, or Google Drive Embed (optional)">
+    <button onclick="addApartment()">➕ Post Apartment</button>
+    <button onclick="clearAll()" style="background-color: #B22222; margin-top: 10px;">🗑️ Clear All Listings</button>
+
+    <hr>
+    <h2>Posted Listings</h2>
+    <div id="listing-container"></div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "yaHomesListings";
+    const ADMIN_PASSWORD = "kontagora"; // Change this if needed
+
+    function checkPassword() {
+      const entered = document.getElementById('admin-password').value;
+      if (entered === ADMIN_PASSWORD) {
+        document.getElementById('password-section').style.display = 'none';
+        document.getElementById('form-section').style.display = 'block';
+        loadListings();
+      } else {
+        alert("Incorrect password.");
+      }
+    }
+
+    function convertToEmbedLink(url) {
+      if (url.includes("youtube.com")) {
+        let videoId = "";
+        if (url.includes("watch?v=")) {
+          videoId = url.split("watch?v=")[1].split("&")[0];
+        } else if (url.includes("/shorts/")) {
+          videoId = url.split("/shorts/")[1].split("?")[0];
+        }
+        if (videoId) return `https://www.youtube.com/embed/${videoId}`;
+        return url;
+      }
+      if (url.includes("drive.google.com")) {
+        const idMatch = url.match(/\/d\/(.*?)(\/|$)/);
+        if (idMatch) {
+          return `https://drive.google.com/file/d/${idMatch[1]}/preview`;
+        }
+      }
+      return url;
+    }
+
+    function saveApartment(listing) {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      const listings = saved ? JSON.parse(saved) : [];
+      listings.unshift(listing);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(listings));
+    }
+
+    function addApartment() {
+      const title = document.getElementById('title').value.trim();
+      const details = document.getElementById('details').value.trim();
+      const imageUrls = document.getElementById('images').value.split(',').map(url => url.trim()).filter(url => url);
+      let video = document.getElementById('video').value.trim();
+
+      if (video) video = convertToEmbedLink(video);
+
+      if (!title || !details || (imageUrls.length === 0 && !video)) {
+        alert("Please fill in the title and details, and add at least one image or video.");
+        return;
+      }
+
+      const newListing = {
+        id: Date.now(),
+        title,
+        details,
+        images: imageUrls,
+        video
+      };
+
+      saveApartment(newListing);
+      alert("Apartment posted!");
+      document.getElementById('title').value = '';
+      document.getElementById('details').value = '';
+      document.getElementById('images').value = '';
+      document.getElementById('video').value = '';
+      loadListings();
+    }
+
+    function deleteListing(id) {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return;
+
+      const listings = JSON.parse(saved);
+      const updated = listings.filter(listing => listing.id !== id);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      loadListings();
+    }
+
+    function clearAll() {
+      if (confirm("Are you sure you want to delete ALL listings?")) {
+        localStorage.removeItem(STORAGE_KEY);
+        alert("All listings deleted.");
+        loadListings();
+      }
+    }
+
+    function loadListings() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      const container = document.getElementById('listing-container');
+      container.innerHTML = '';
+      if (!saved) return;
+
+      const listings = JSON.parse(saved);
+      listings.forEach(listing => {
+        const div = document.createElement('div');
+        div.className = 'listing';
+        div.innerHTML = `
+          <h3>${listing.title}</h3>
+          <p><strong>Details:</strong> ${listing.details}</p>
+          <p><strong>Images:</strong> ${listing.images.length}</p>
+          ${listing.video ? `<p><strong>Video:</strong> Embedded</p>` : ''}
+          <button class="delete-btn" onclick="deleteListing(${listing.id})">🗑️ Delete This Listing</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+  </script>
+</body>
+</html>
