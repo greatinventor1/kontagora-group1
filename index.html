@@ -66,7 +66,7 @@
       max-width: 1200px;
       margin: auto;
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
       gap: 20px;
     }
 
@@ -107,7 +107,7 @@
       transform: scale(1.02);
     }
 
-    .video iframe {
+    .video video {
       width: 100%;
       height: 300px;
       border: none;
@@ -140,79 +140,78 @@
   <div id="listings"></div>
 
   <script>
-const SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyhwevZ0Hy6jq0Nw-HKSg4g9ZTI-aWNJ9vsMTyo1GURstQjB8WNfOvk3Vo786KQBwdESQ/exec";
+    const SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyhwevZ0Hy6jq0Nw-HKSg4g9ZTI-aWNJ9vsMTyo1GURstQjB8WNfOvk3Vo786KQBwdESQ/exec";
 
-async function loadListings() {
-  try {
-    const response = await fetch(SHEET_WEB_APP_URL);
-    const listings = await response.json();
+    let allListings = [];
 
-    window.allListings = listings;
-    renderListings(listings);
-  } catch (error) {
-    console.error("Error loading listings:", error);
-    document.getElementById('listings').innerHTML = "<p>❌ Failed to load listings.</p>";
-  }
-}
+    async function loadListings() {
+      try {
+        const response = await fetch(SHEET_WEB_APP_URL);
+        const listings = await response.json();
+        allListings = listings;
+        renderListings(listings);
+      } catch (error) {
+        console.error("Error loading listings:", error);
+        document.getElementById('listings').innerHTML = "<p>Failed to load listings.</p>";
+      }
+    }
 
-function renderListings(listings) {
-  const container = document.getElementById('listings');
-  container.innerHTML = '';
+    function renderListings(listings) {
+      const container = document.getElementById('listings');
+      container.innerHTML = '';
 
-  listings.forEach(listing => {
-    const detailsArray = listing.details
-      ? listing.details.split(',').map(item => `<li>${item.trim()}</li>`).join('')
-      : '';
+      listings.forEach(listing => {
+        const detailsArray = listing.details
+          ? listing.details.split(',').map(item => `<li>${item.trim()}</li>`).join('')
+          : '';
 
-    const imageGallery = listing.imageurls
-      ? listing.imageurls.split(',').map(src => `<img src="${src.trim()}" onclick="openImage('${src.trim()}')">`).join('')
-      : '';
+        const imageGallery = listing.imageurls
+          ? listing.imageurls.split(',').map(src => `<img src="${src.trim()}" onclick="openImage('${src.trim()}')">`).join('')
+          : '';
 
-    const videoEmbed = listing.videourl && listing.videourl.trim()
-      ? `<div class="video"><iframe src="${getEmbedURL(listing.videourl.trim())}" allowfullscreen></iframe></div>`
-      : '';
+        const rawVideoUrl = listing.videourl.trim();
+        let videoSrc = rawVideoUrl;
 
-    const html = `
-      <div class="listing">
-        <h2>${listing.title}</h2>
-        <ul class="details">${detailsArray}</ul>
-        <div class="images">${imageGallery}</div>
-        ${videoEmbed}
-      </div>
-    `;
-    container.innerHTML += html;
-  });
-}
+        if (rawVideoUrl.includes("drive.google.com")) {
+          const match = rawVideoUrl.match(/\/d\/([a-zA-Z0-9_-]+)\//);
+          if (match && match[1]) {
+            const fileId = match[1];
+            videoSrc = `https://drive.google.com/uc?export=download&id=${fileId}`;
+          }
+        }
 
-function filterListings() {
-  const search = document.getElementById('search').value.toLowerCase();
-  const filtered = window.allListings.filter(l =>
-    l.title.toLowerCase().includes(search) || l.details.toLowerCase().includes(search)
-  );
-  renderListings(filtered);
-}
+        const videoEmbed = rawVideoUrl
+          ? `<div class="video"><video src="${videoSrc}" controls></video></div>`
+          : '';
 
-function openImage(src) {
-  const win = window.open();
-  win.document.write(`<img src="${src}" style="width:100%">`);
-}
+        const html = `
+          <div class="listing">
+            <h2>${listing.title}</h2>
+            <ul class="details">${detailsArray}</ul>
+            <div class="images">${imageGallery}</div>
+            ${videoEmbed}
+          </div>
+        `;
+        container.innerHTML += html;
+      });
+    }
 
-function getEmbedURL(url) {
-  if (url.includes("youtube.com") || url.includes("youtu.be")) {
-    const videoId = url.split("v=")[1]?.split("&")[0] || url.split("/").pop();
-    return `https://www.youtube.com/embed/${videoId}`;
-  }
+    function filterListings() {
+      const query = document.getElementById('search').value.toLowerCase();
+      const filtered = allListings.filter(item =>
+        item.title.toLowerCase().includes(query) ||
+        item.details.toLowerCase().includes(query)
+      );
+      renderListings(filtered);
+    }
 
-  if (url.includes("drive.google.com")) {
-    const fileId = url.match(/[-\w]{25,}/)?.[0];
-    return `https://drive.google.com/file/d/${fileId}/preview`;
-  }
+    function openImage(src) {
+      const win = window.open();
+      win.document.write(`<img src="${src}" style="width:100%">`);
+    }
 
-  return url;
-}
-
-loadListings();
-</script>
-
+    loadListings();
+  </script>
 </body>
 </html>
+
