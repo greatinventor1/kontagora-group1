@@ -107,12 +107,14 @@
       transform: scale(1.02);
     }
 
-    .video iframe {
+    .video {
+      margin-top: 15px;
+    }
+
+    .video video {
       width: 100%;
       height: 300px;
-      border: none;
       border-radius: 10px;
-      margin-top: 15px;
     }
 
     @media (max-width: 768px) {
@@ -142,60 +144,46 @@
   <script>
     const SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzcsslXauMn16M5865IG0Ur9ZLeUt6V3QHgF__lW5uJwRlwcOZFJU5LY03p4S-9PJZC5A/exec";
 
-    let listingsData = [];
-
     async function loadListings() {
       try {
         const response = await fetch(SHEET_WEB_APP_URL);
         const listings = await response.json();
-        listingsData = listings;
-        renderListings(listings);
+
+        const container = document.getElementById('listings');
+        container.innerHTML = '';
+
+        listings.forEach(listing => {
+          const detailsArray = listing.details
+            ? listing.details.split(',').map(item => `<li>${item.trim()}</li>`).join('')
+            : '';
+
+          const imageGallery = listing.imageurls
+            ? listing.imageurls.split(',').map(src => `<img src="${src.trim()}" onclick="openImage('${src.trim()}')">`).join('')
+            : '';
+
+          const videoEmbed = listing.videourl && listing.videourl.trim()
+            ? `<div class="video">
+                <video controls>
+                  <source src="${listing.videourl.trim()}" type="video/mp4">
+                  Your browser does not support the video tag.
+                </video>
+              </div>`
+            : '';
+
+          const html = `
+            <div class="listing">
+              <h2>${listing.title}</h2>
+              <ul class="details">${detailsArray}</ul>
+              <div class="images">${imageGallery}</div>
+              ${videoEmbed}
+            </div>
+          `;
+          container.innerHTML += html;
+        });
       } catch (error) {
         console.error("Error loading listings:", error);
         document.getElementById('listings').innerHTML = "<p>Failed to load listings.</p>";
       }
-    }
-
-    function renderListings(listings) {
-      const container = document.getElementById('listings');
-      container.innerHTML = '';
-
-      listings.forEach(listing => {
-        const detailsArray = listing.details
-          ? listing.details.split(',').map(item => `<li>${item.trim()}</li>`).join('')
-          : '';
-
-        const imageGallery = listing.imageurls
-          ? listing.imageurls.split(',').map(src => `<img src="${src.trim()}" onclick="openImage('${src.trim()}')">`).join('')
-          : '';
-
-        let videoEmbed = '';
-        if (listing.videourl && listing.videourl.includes("drive.google.com")) {
-          const match = listing.videourl.match(/\/d\/(.+?)\//);
-          const videoId = match ? match[1] : '';
-          if (videoId) {
-            videoEmbed = `
-              <div class="video">
-                <iframe src="https://drive.google.com/file/d/${videoId}/preview" allowfullscreen></iframe>
-              </div>`;
-          }
-        } else if (listing.videourl) {
-          videoEmbed = `
-            <div class="video">
-              <video src="${listing.videourl.trim()}" controls></video>
-            </div>`;
-        }
-
-        const html = `
-          <div class="listing">
-            <h2>${listing.title}</h2>
-            <ul class="details">${detailsArray}</ul>
-            <div class="images">${imageGallery}</div>
-            ${videoEmbed}
-          </div>
-        `;
-        container.innerHTML += html;
-      });
     }
 
     function openImage(src) {
@@ -205,16 +193,23 @@
 
     function filterListings() {
       const query = document.getElementById("search").value.toLowerCase();
-      const filtered = listingsData.filter(listing =>
-        listing.title.toLowerCase().includes(query) ||
-        listing.details.toLowerCase().includes(query)
-      );
-      renderListings(filtered);
+      const listings = document.querySelectorAll(".listing");
+
+      listings.forEach(listing => {
+        const title = listing.querySelector("h2").textContent.toLowerCase();
+        const details = listing.querySelector(".details").textContent.toLowerCase();
+
+        if (title.includes(query) || details.includes(query)) {
+          listing.style.display = "";
+        } else {
+          listing.style.display = "none";
+        }
+      });
     }
 
     loadListings();
   </script>
-
 </body>
 </html>
+
 
