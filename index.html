@@ -107,7 +107,7 @@
       transform: scale(1.02);
     }
 
-    .video video {
+    .video iframe {
       width: 100%;
       height: 300px;
       border: none;
@@ -140,15 +140,15 @@
   <div id="listings"></div>
 
   <script>
-    const SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyhwevZ0Hy6jq0Nw-HKSg4g9ZTI-aWNJ9vsMTyo1GURstQjB8WNfOvk3Vo786KQBwdESQ/exec";
+    const SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzcsslXauMn16M5865IG0Ur9ZLeUt6V3QHgF__lW5uJwRlwcOZFJU5LY03p4S-9PJZC5A/exec";
 
-    let allListings = [];
+    let listingsData = [];
 
     async function loadListings() {
       try {
         const response = await fetch(SHEET_WEB_APP_URL);
         const listings = await response.json();
-        allListings = listings;
+        listingsData = listings;
         renderListings(listings);
       } catch (error) {
         console.error("Error loading listings:", error);
@@ -169,20 +169,22 @@
           ? listing.imageurls.split(',').map(src => `<img src="${src.trim()}" onclick="openImage('${src.trim()}')">`).join('')
           : '';
 
-        const rawVideoUrl = listing.videourl.trim();
-        let videoSrc = rawVideoUrl;
-
-        if (rawVideoUrl.includes("drive.google.com")) {
-          const match = rawVideoUrl.match(/\/d\/([a-zA-Z0-9_-]+)\//);
-          if (match && match[1]) {
-            const fileId = match[1];
-            videoSrc = `https://drive.google.com/uc?export=download&id=${fileId}`;
+        let videoEmbed = '';
+        if (listing.videourl && listing.videourl.includes("drive.google.com")) {
+          const match = listing.videourl.match(/\/d\/(.+?)\//);
+          const videoId = match ? match[1] : '';
+          if (videoId) {
+            videoEmbed = `
+              <div class="video">
+                <iframe src="https://drive.google.com/file/d/${videoId}/preview" allowfullscreen></iframe>
+              </div>`;
           }
+        } else if (listing.videourl) {
+          videoEmbed = `
+            <div class="video">
+              <video src="${listing.videourl.trim()}" controls></video>
+            </div>`;
         }
-
-        const videoEmbed = rawVideoUrl
-          ? `<div class="video"><video src="${videoSrc}" controls></video></div>`
-          : '';
 
         const html = `
           <div class="listing">
@@ -196,22 +198,23 @@
       });
     }
 
-    function filterListings() {
-      const query = document.getElementById('search').value.toLowerCase();
-      const filtered = allListings.filter(item =>
-        item.title.toLowerCase().includes(query) ||
-        item.details.toLowerCase().includes(query)
-      );
-      renderListings(filtered);
-    }
-
     function openImage(src) {
       const win = window.open();
       win.document.write(`<img src="${src}" style="width:100%">`);
     }
 
+    function filterListings() {
+      const query = document.getElementById("search").value.toLowerCase();
+      const filtered = listingsData.filter(listing =>
+        listing.title.toLowerCase().includes(query) ||
+        listing.details.toLowerCase().includes(query)
+      );
+      renderListings(filtered);
+    }
+
     loadListings();
   </script>
+
 </body>
 </html>
 
