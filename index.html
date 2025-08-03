@@ -66,7 +66,7 @@
       max-width: 1200px;
       margin: auto;
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
       gap: 20px;
     }
 
@@ -147,36 +147,49 @@ async function loadListings() {
     const response = await fetch(SHEET_WEB_APP_URL);
     const listings = await response.json();
 
-    const container = document.getElementById('listings');
-    container.innerHTML = '';
-
-    listings.forEach(listing => {
-      const detailsArray = listing.details
-        ? listing.details.split(',').map(item => `<li>${item.trim()}</li>`).join('')
-        : '';
-
-      const imageGallery = listing.imageurls
-        ? listing.imageurls.split(',').map(src => `<img src="${src.trim()}" onclick="openImage('${src.trim()}')">`).join('')
-        : '';
-
-      const videoEmbed = listing.videourl && listing.videourl.trim()
-        ? `<div class="video"><video src="${listing.videourl.trim()}" controls></video></div>`
-        : '';
-
-      const html = `
-        <div class="listing">
-          <h2>${listing.title}</h2>
-          <ul class="details">${detailsArray}</ul>
-          <div class="images">${imageGallery}</div>
-          ${videoEmbed}
-        </div>
-      `;
-      container.innerHTML += html;
-    });
+    window.allListings = listings;
+    renderListings(listings);
   } catch (error) {
     console.error("Error loading listings:", error);
-    document.getElementById('listings').innerHTML = "<p>Failed to load listings.</p>";
+    document.getElementById('listings').innerHTML = "<p>❌ Failed to load listings.</p>";
   }
+}
+
+function renderListings(listings) {
+  const container = document.getElementById('listings');
+  container.innerHTML = '';
+
+  listings.forEach(listing => {
+    const detailsArray = listing.details
+      ? listing.details.split(',').map(item => `<li>${item.trim()}</li>`).join('')
+      : '';
+
+    const imageGallery = listing.imageurls
+      ? listing.imageurls.split(',').map(src => `<img src="${src.trim()}" onclick="openImage('${src.trim()}')">`).join('')
+      : '';
+
+    const videoEmbed = listing.videourl && listing.videourl.trim()
+      ? `<div class="video"><iframe src="${getEmbedURL(listing.videourl.trim())}" allowfullscreen></iframe></div>`
+      : '';
+
+    const html = `
+      <div class="listing">
+        <h2>${listing.title}</h2>
+        <ul class="details">${detailsArray}</ul>
+        <div class="images">${imageGallery}</div>
+        ${videoEmbed}
+      </div>
+    `;
+    container.innerHTML += html;
+  });
+}
+
+function filterListings() {
+  const search = document.getElementById('search').value.toLowerCase();
+  const filtered = window.allListings.filter(l =>
+    l.title.toLowerCase().includes(search) || l.details.toLowerCase().includes(search)
+  );
+  renderListings(filtered);
 }
 
 function openImage(src) {
@@ -184,15 +197,22 @@ function openImage(src) {
   win.document.write(`<img src="${src}" style="width:100%">`);
 }
 
+function getEmbedURL(url) {
+  if (url.includes("youtube.com") || url.includes("youtu.be")) {
+    const videoId = url.split("v=")[1]?.split("&")[0] || url.split("/").pop();
+    return `https://www.youtube.com/embed/${videoId}`;
+  }
+
+  if (url.includes("drive.google.com")) {
+    const fileId = url.match(/[-\w]{25,}/)?.[0];
+    return `https://drive.google.com/file/d/${fileId}/preview`;
+  }
+
+  return url;
+}
+
 loadListings();
 </script>
 
 </body>
-</html>
-
-
-
-</body>
-</html>
-
 </html>
