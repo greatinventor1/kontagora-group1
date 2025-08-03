@@ -14,6 +14,7 @@
       padding: 0;
       color: #333;
     }
+
     header {
       background: #1a1a1a;
       color: white;
@@ -21,6 +22,7 @@
       text-align: center;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
+
     main {
       max-width: 600px;
       margin: 40px auto;
@@ -29,15 +31,18 @@
       border-radius: 12px;
       box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
     }
+
     h2 {
       text-align: center;
       color: #f5a623;
     }
+
     label {
       display: block;
       margin-top: 20px;
       font-weight: 600;
     }
+
     input[type="text"],
     textarea {
       width: 100%;
@@ -48,9 +53,11 @@
       margin-top: 8px;
       box-sizing: border-box;
     }
+
     textarea {
       resize: vertical;
     }
+
     button {
       margin-top: 30px;
       width: 100%;
@@ -62,9 +69,11 @@
       border-radius: 8px;
       cursor: pointer;
     }
+
     button:hover {
       background-color: #e09b1f;
     }
+
     .message {
       margin-top: 20px;
       text-align: center;
@@ -98,47 +107,51 @@
   </main>
 
   <script>
-    const FORM = document.getElementById("listingForm");
-    const MSG = document.getElementById("message");
+  const FORM = document.getElementById("listingForm");
+  const MSG = document.getElementById("message");
 
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzoG3Au2wjHpBj7pYP9IwSpVKsDP_U3Asnk4mjWmD6C8Gz7MB2o1sYzWxEz7gySKlqtsw/exec";
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzcsslXauMn16M5865IG0Ur9ZLeUt6V3QHgF__lW5uJwRlwcOZFJU5LY03p4S-9PJZC5A/exec";
 
-    FORM.addEventListener("submit", async function(e) {
-      e.preventDefault();
-      MSG.textContent = "Submitting...";
+  FORM.addEventListener("submit", async function(e) {
+    e.preventDefault();
+    MSG.textContent = "Submitting...";
 
-      const formData = new FormData(FORM);
-      const data = {
-        title: formData.get("title").trim(),
-        details: formData.get("details").trim(),
-        imageurls: formData.get("imageurls").trim(),
-        videourl: formData.get("videourl").trim()
-      };
+    const formData = new FormData(FORM);
+    let videourl = formData.get("videourl").trim();
 
-      try {
-        const res = await fetch(WEB_APP_URL, {
-          method: "POST",
-          body: JSON.stringify(data),
-          headers: {
-            "Content-Type": "application/json"
-          }
-        });
+    // Auto-convert Google Drive links to preview format
+    const driveMatch = videourl.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)\//);
+    if (driveMatch) {
+      const videoId = driveMatch[1];
+      videourl = `https://drive.google.com/file/d/${videoId}/preview`;
+    }
 
-        const text = await res.text();
+    const data = {
+      title: formData.get("title").trim(),
+      details: formData.get("details").trim(),
+      imageurls: formData.get("imageurls").trim(),
+      videourl,
+    };
 
-        if (!res.ok || !text.includes("Success")) {
-          throw new Error("Server error: " + text);
-        }
+    try {
+      const res = await fetch(WEB_APP_URL, {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-        MSG.textContent = "✅ Listing submitted successfully!";
-        FORM.reset();
-      } catch (err) {
-        console.error("Error submitting:", err);
-        MSG.textContent = "❌ Failed to submit listing. Check console for details.";
-      }
-    });
-  </script>
+      if (!res.ok) throw new Error("Submission failed");
+
+      MSG.textContent = "✅ Listing submitted successfully!";
+      FORM.reset();
+    } catch (err) {
+      console.error(err);
+      MSG.textContent = "❌ Failed to submit listing. Check console for details.";
+    }
+  });
+</script>
+
 </body>
 </html>
-
-
