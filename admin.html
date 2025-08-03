@@ -93,7 +93,7 @@
       <label for="imageurls">Image URLs (comma separated)</label>
       <textarea id="imageurls" name="imageurls" rows="3"></textarea>
 
-      <label for="videourl">Video URL (from GitHub raw)</label>
+      <label for="videourl">Video URL (raw GitHub path)</label>
       <input type="text" id="videourl" name="videourl" />
 
       <button type="submit">Submit Listing</button>
@@ -101,34 +101,35 @@
     </form>
   </main>
 
-<script>
-  const FORM = document.getElementById("listingForm");
-  const MSG = document.getElementById("message");
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzcsslXauMn16M5865IG0Ur9ZLeUt6V3QHgF__lW5uJwRlwcOZFJU5LY03p4S-9PJZC5A/exec";
+  <script>
+    const FORM = document.getElementById("listingForm");
+    const MSG = document.getElementById("message");
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzcsslXauMn16M5865IG0Ur9ZLeUt6V3QHgF__lW5uJwRlwcOZFJU5LY03p4S-9PJZC5A/exec";
 
-  FORM.addEventListener("submit", async function(e) {
-    e.preventDefault();
-    MSG.textContent = "Submitting...";
+    FORM.addEventListener("submit", async function(e) {
+      e.preventDefault();
+      MSG.textContent = "Submitting...";
 
-    const formData = new FormData(FORM);
+      const formData = new FormData(FORM);
 
-    try {
-      const res = await fetch(WEB_APP_URL, {
-        method: "POST",
-        body: new URLSearchParams(formData) // ✅ Sends as form data
-      });
+      try {
+        const response = await fetch(WEB_APP_URL, {
+          method: "POST",
+          body: new URLSearchParams(formData),
+        });
 
-      if (!res.ok) throw new Error("Submission failed");
+        if (!response.ok) throw new Error("Network error");
 
-      MSG.textContent = "✅ Listing submitted successfully!";
-      FORM.reset();
-    } catch (err) {
-      console.error(err);
-      MSG.textContent = "❌ Failed to submit listing. Check console for details.";
-    }
-  });
-</script>
-
+        const text = await response.text();
+        console.log(text);
+        MSG.textContent = "✅ Listing submitted successfully!";
+        FORM.reset();
+      } catch (error) {
+        console.error(error);
+        MSG.textContent = "❌ Failed to submit listing. Check console for details.";
+      }
+    });
+  </script>
 </body>
 </html>
 
