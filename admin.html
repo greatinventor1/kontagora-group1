@@ -20,7 +20,6 @@
       color: white;
       padding: 20px;
       text-align: center;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
     main {
@@ -52,10 +51,6 @@
       border: 1px solid #ccc;
       margin-top: 8px;
       box-sizing: border-box;
-    }
-
-    textarea {
-      resize: vertical;
     }
 
     button {
@@ -98,7 +93,7 @@
       <label for="imageurls">Image URLs (comma separated)</label>
       <textarea id="imageurls" name="imageurls" rows="3"></textarea>
 
-      <label for="videourl">Video URL (optional)</label>
+      <label for="videourl">Video URL (from GitHub raw)</label>
       <input type="text" id="videourl" name="videourl" />
 
       <button type="submit">Submit Listing</button>
@@ -107,51 +102,41 @@
   </main>
 
   <script>
-  const FORM = document.getElementById("listingForm");
-  const MSG = document.getElementById("message");
+    const FORM = document.getElementById("listingForm");
+    const MSG = document.getElementById("message");
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzcsslXauMn16M5865IG0Ur9ZLeUt6V3QHgF__lW5uJwRlwcOZFJU5LY03p4S-9PJZC5A/exec";
 
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzcsslXauMn16M5865IG0Ur9ZLeUt6V3QHgF__lW5uJwRlwcOZFJU5LY03p4S-9PJZC5A/exec";
+    FORM.addEventListener("submit", async function(e) {
+      e.preventDefault();
+      MSG.textContent = "Submitting...";
 
-  FORM.addEventListener("submit", async function(e) {
-    e.preventDefault();
-    MSG.textContent = "Submitting...";
+      const formData = new FormData(FORM);
+      const data = {
+        title: formData.get("title").trim(),
+        details: formData.get("details").trim(),
+        imageurls: formData.get("imageurls").trim(),
+        videourl: formData.get("videourl").trim(),
+      };
 
-    const formData = new FormData(FORM);
-    let videourl = formData.get("videourl").trim();
+      try {
+        const res = await fetch(WEB_APP_URL, {
+          method: "POST",
+          body: JSON.stringify(data),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
 
-    // Auto-convert Google Drive links to preview format
-    const driveMatch = videourl.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)\//);
-    if (driveMatch) {
-      const videoId = driveMatch[1];
-      videourl = `https://drive.google.com/file/d/${videoId}/preview`;
-    }
+        if (!res.ok) throw new Error("Submission failed");
 
-    const data = {
-      title: formData.get("title").trim(),
-      details: formData.get("details").trim(),
-      imageurls: formData.get("imageurls").trim(),
-      videourl,
-    };
-
-    try {
-      const res = await fetch(WEB_APP_URL, {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!res.ok) throw new Error("Submission failed");
-
-      MSG.textContent = "✅ Listing submitted successfully!";
-      FORM.reset();
-    } catch (err) {
-      console.error(err);
-      MSG.textContent = "❌ Failed to submit listing. Check console for details.";
-    }
-  });
-</script>
-
+        MSG.textContent = "✅ Listing submitted successfully!";
+        FORM.reset();
+      } catch (err) {
+        console.error(err);
+        MSG.textContent = "❌ Failed to submit listing. Check console for details.";
+      }
+    });
+  </script>
 </body>
 </html>
+
