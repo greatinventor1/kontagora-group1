@@ -96,31 +96,33 @@
         }
 
         data.forEach(item => {
+          const title = item["Title"];
+          const details = item["Details"];
+          const imageurls = item["Image URLs"];
+          const videourl = item["Video URL"];
+
+          const detailsList = details
+            ? details.split(",").map(d => `<li>${d.trim()}</li>`).join("")
+            : "";
+
+          const imageElements = imageurls
+            ? imageurls.split(",").map(url => `<img src="${url.trim()}" alt="Image">`).join("")
+            : "";
+
+          const videoElement = videourl
+            ? `<video controls src="${videourl.trim()}"></video>`
+            : "";
+
           const card = document.createElement("div");
           card.className = "card";
-
-          const detailsList = item.details
-            .split(",")
-            .map(d => `<li>${d.trim()}</li>`)
-            .join("");
-
-          const imageElements = item.imageurls
-            ? item.imageurls.split(",").map(url => `<img src="${url.trim()}" alt="Image">`).join("")
-            : "";
-
-          const videoElement = item.videourl
-            ? `<video controls src="${item.videourl.trim()}"></video>`
-            : "";
-
           card.innerHTML = `
-            <h2>${item.title}</h2>
+            <h2>${title}</h2>
             <ul class="details">${detailsList}</ul>
             <div class="media">
               ${imageElements}
               ${videoElement}
             </div>
           `;
-
           container.appendChild(card);
         });
       })
