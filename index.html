@@ -65,7 +65,6 @@
     .media video {
       width: 100%;
       border-radius: 10px;
-      margin-top: 10px;
     }
 
     .error {
@@ -100,20 +99,21 @@
           const card = document.createElement("div");
           card.className = "card";
 
-          const detailsList = item.Details
-            ? item.Details.split(",").map(d => `<li>${d.trim()}</li>`).join("")
-            : "<li>No details</li>";
+          const detailsList = item.details
+            .split(",")
+            .map(d => `<li>${d.trim()}</li>`)
+            .join("");
 
-          const imageElements = item["Image URLs"]
-            ? item["Image URLs"].split(",").map(url => `<img src="${url.trim()}" alt="Image">`).join("")
+          const imageElements = item.imageurls
+            ? item.imageurls.split(",").map(url => `<img src="${url.trim()}" alt="Image">`).join("")
             : "";
 
-          const videoElement = item["Video URL"]
-            ? `<video controls src="${item["Video URL"].trim()}"></video>`
+          const videoElement = item.videourl
+            ? `<video controls src="${item.videourl.trim()}"></video>`
             : "";
 
           card.innerHTML = `
-            <h2>${item.Title || "Untitled"}</h2>
+            <h2>${item.title}</h2>
             <ul class="details">${detailsList}</ul>
             <div class="media">
               ${imageElements}
@@ -131,6 +131,7 @@
   </script>
 </body>
 </html>
+
 
 
 
