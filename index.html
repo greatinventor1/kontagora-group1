@@ -677,4 +677,303 @@
 
 
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kontagora Group - Real Estate Professionals</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Open+Sans:wght@400;600&display=swap');
+    
+    /* Base Styles */
+    body {
+      font-family: 'Open Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      color: #574747;
+      line-height: 1.6;
+      background: #efefef;
+    }
+    
+    /* WhatsApp Button */
+    .whatsapp-float {
+      position: fixed;
+      width: 60px;
+      height: 60px;
+      bottom: 40px;
+      right: 40px;
+      background-color: #25d366;
+      color: #FFF;
+      border-radius: 50px;
+      text-align: center;
+      font-size: 30px;
+      box-shadow: 2px 2px 3px #999;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+    
+    .whatsapp-float:hover {
+      background-color: #128C7E;
+      transform: scale(1.1);
+    }
+    
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 200;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.9);
+    }
+    
+    .modal-content {
+      margin: auto;
+      display: block;
+      width: 80%;
+      max-width: 1200px;
+      animation-name: zoom;
+      animation-duration: 0.6s;
+    }
+    
+    @keyframes zoom {
+      from {transform:scale(0)} 
+      to {transform:scale(1)}
+    }
+    
+    .close {
+      position: absolute;
+      top: 15px;
+      right: 35px;
+      color: #f1f1f1;
+      font-size: 40px;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+    
+    .close:hover,
+    .close:focus {
+      color: #bbb;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    
+    .property-slideshow {
+      position: relative;
+      width: 100%;
+      height: 500px;
+      overflow: hidden;
+    }
+    
+    .property-slide {
+      display: none;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background-color: #000;
+    }
+    
+    .property-slide.active {
+      display: block;
+    }
+    
+    .prev, .next {
+      cursor: pointer;
+      position: absolute;
+      top: 50%;
+      width: auto;
+      padding: 16px;
+      margin-top: -22px;
+      color: white;
+      font-weight: bold;
+      font-size: 20px;
+      transition: 0.6s ease;
+      border-radius: 0 3px 3px 0;
+      user-select: none;
+      background-color: rgba(0,0,0,0.5);
+    }
+    
+    .next {
+      right: 0;
+      border-radius: 3px 0 0 3px;
+    }
+    
+    .prev:hover, .next:hover {
+      background-color: rgba(0,0,0,0.8);
+    }
+    
+    .property-details {
+      padding: 20px;
+      background: white;
+      color: #333;
+    }
+    
+    /* Rest of your existing styles... */
+    /* [Previous CSS content remains exactly the same] */
+  </style>
+</head>
+<body>
+  <!-- WhatsApp Button -->
+  <a href="https://wa.me/2001044965482" class="whatsapp-float" target="_blank">
+    <i class="fab fa-whatsapp"></i>
+  </a>
+
+  <!-- Property Details Modal -->
+  <div id="propertyModal" class="modal">
+    <span class="close">&times;</span>
+    <div class="modal-content">
+      <div class="property-slideshow" id="propertySlideshow">
+        <!-- Slides will be added dynamically -->
+      </div>
+      <div class="property-details" id="propertyDetails">
+        <!-- Details will be added dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- [Rest of your HTML content remains exactly the same] -->
+
+  <script>
+    // Add Font Awesome for WhatsApp icon
+    document.head.insertAdjacentHTML('beforeend', '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">');
+
+    // Modal functionality
+    const modal = document.getElementById("propertyModal");
+    const closeBtn = document.querySelector(".close");
+    
+    closeBtn.onclick = function() {
+      modal.style.display = "none";
+    }
+    
+    window.onclick = function(event) {
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    }
+    
+    // Modified createPropertyCard function to include view details click handler
+    function createPropertyCard(property) {
+      return `
+        <div class="property-card">
+          <div class="property-image" style="background-image: url('${property.imageurls?.split(',')[0]?.trim() || 'https://via.placeholder.com/400x300'}')"></div>
+          <div class="property-info">
+            <h3 class="property-address">${property.title || 'Property Address'}</h3>
+            <p class="property-location">${property.location || 'Location not specified'}</p>
+            <p class="property-price">${property.price || 'Price not available'}</p>
+            <div class="property-features">
+              <span class="feature"><i>🏠</i> ${property.propertyType || 'N/A'}</span>
+              <span class="feature"><i>🛏️</i> ${property.bedrooms || 'N/A'} bedrooms</span>
+            </div>
+            <button class="submit-btn view-details-btn" style="margin-top: 15px; width: 100%;" 
+                    data-title="${property.title || ''}"
+                    data-location="${property.location || ''}"
+                    data-price="${property.price || ''}"
+                    data-type="${property.propertyType || ''}"
+                    data-bedrooms="${property.bedrooms || ''}"
+                    data-description="${property.description || ''}"
+                    data-images="${property.imageurls || ''}">
+              View Details
+            </button>
+          </div>
+        </div>
+      `;
+    }
+    
+    // Function to show property details in modal
+    function showPropertyDetails(property) {
+      const slideshow = document.getElementById("propertySlideshow");
+      const details = document.getElementById("propertyDetails");
+      
+      // Clear previous content
+      slideshow.innerHTML = '';
+      details.innerHTML = '';
+      
+      // Add images to slideshow
+      const images = property.images.split(',').map(img => img.trim());
+      images.forEach((img, index) => {
+        const slide = document.createElement("div");
+        slide.className = `property-slide ${index === 0 ? 'active' : ''}`;
+        slide.innerHTML = `<img src="${img}" style="width:100%; height:100%; object-fit:contain;">`;
+        slideshow.appendChild(slide);
+      });
+      
+      // Add navigation arrows if multiple images
+      if (images.length > 1) {
+        slideshow.insertAdjacentHTML('beforeend', `
+          <a class="prev" onclick="plusSlides(-1)">&#10094;</a>
+          <a class="next" onclick="plusSlides(1)">&#10095;</a>
+        `);
+      }
+      
+      // Add property details
+      details.innerHTML = `
+        <h2>${property.title}</h2>
+        <p><strong>Location:</strong> ${property.location}</p>
+        <p><strong>Price:</strong> ${property.price}</p>
+        <p><strong>Property Type:</strong> ${property.type}</p>
+        <p><strong>Bedrooms:</strong> ${property.bedrooms}</p>
+        <p><strong>Description:</strong> ${property.description}</p>
+        <a href="https://wa.me/2001044965482?text=I'm interested in ${encodeURIComponent(property.title)} at ${encodeURIComponent(property.location)}" 
+           class="submit-btn" style="display: inline-block; margin-top: 20px;" target="_blank">
+          Contact via WhatsApp
+        </a>
+      `;
+      
+      // Show the modal
+      modal.style.display = "block";
+      currentSlideIndex = 1;
+      showSlides(currentSlideIndex);
+    }
+    
+    // Slideshow functionality
+    let currentSlideIndex = 1;
+    
+    function plusSlides(n) {
+      showSlides(currentSlideIndex += n);
+    }
+    
+    function showSlides(n) {
+      let i;
+      const slides = document.getElementsByClassName("property-slide");
+      
+      if (n > slides.length) { currentSlideIndex = 1 }
+      if (n < 1) { currentSlideIndex = slides.length }
+      
+      for (i = 0; i < slides.length; i++) {
+        slides[i].classList.remove("active");
+      }
+      
+      slides[currentSlideIndex-1].classList.add("active");
+    }
+    
+    // Event delegation for view details buttons
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('view-details-btn')) {
+        const property = {
+          title: e.target.dataset.title,
+          location: e.target.dataset.location,
+          price: e.target.dataset.price,
+          type: e.target.dataset.type,
+          bedrooms: e.target.dataset.bedrooms,
+          description: e.target.dataset.description,
+          images: e.target.dataset.images
+        };
+        showPropertyDetails(property);
+      }
+    });
+    
+    // [Rest of your JavaScript remains exactly the same]
+  </script>
+</body>
+</html>
+
+
+
 
