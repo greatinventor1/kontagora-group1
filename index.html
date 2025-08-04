@@ -4,213 +4,132 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Kontagora Group – Where Trust Meets Real Estate</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <title>Kontagora Group Listings</title>
   <style>
     body {
-      font-family: 'Inter', sans-serif;
-      background: #f7f7f7;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f4f4f4;
       margin: 0;
       padding: 0;
-      color: #333;
     }
 
     header {
-      display: flex;
-      align-items: center;
-      padding: 16px 24px;
       background: #1a1a1a;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    header img {
-      height: 60px;
-      margin-right: 20px;
-    }
-
-    header h1 {
       color: white;
-      font-size: 24px;
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    h1 {
       margin: 0;
     }
 
-    .welcome {
-      text-align: center;
-      padding: 40px 20px 10px;
-    }
-
-    .welcome h2 {
-      font-size: 28px;
-      color: #f5a623;
-      margin-bottom: 5px;
-    }
-
-    .search-bar {
-      max-width: 600px;
-      margin: 20px auto;
-      padding: 10px;
-      display: flex;
-      justify-content: center;
-    }
-
-    .search-bar input {
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-    }
-
-    #listings {
-      padding: 20px;
-      max-width: 1200px;
+    .container {
+      padding: 30px;
+      max-width: 1000px;
       margin: auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
-      gap: 20px;
     }
 
-    .listing {
+    .card {
       background: white;
       padding: 20px;
       border-radius: 12px;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.05);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      margin-bottom: 30px;
     }
 
-    .listing h2 {
-      font-size: 20px;
-      color: #f5a623;
+    .card h2 {
       margin-top: 0;
+      color: #333;
     }
 
     .details {
-      padding-left: 18px;
-      margin-bottom: 12px;
+      margin: 10px 0;
+      padding-left: 20px;
     }
 
-    .images {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
+    .details li {
+      margin-bottom: 5px;
     }
 
-    .images img {
-      width: 100%;
-      height: 180px;
-      object-fit: cover;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-
-    .images img:hover {
-      transform: scale(1.02);
-    }
-
-    .video {
+    .media {
       margin-top: 15px;
     }
 
-    .video video {
+    .media img {
+      max-width: 100%;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+
+    .media video {
       width: 100%;
-      height: 300px;
       border-radius: 10px;
     }
 
-    @media (max-width: 768px) {
-      .images {
-        grid-template-columns: 1fr;
-      }
+    .error {
+      text-align: center;
+      color: red;
+      margin-top: 40px;
     }
   </style>
 </head>
 <body>
   <header>
-    <img src="ya-homes-logo.png" alt="YA Homes Logo">
-    <h1>Kontagora Group</h1>
+    <h1>Kontagora Group Listings</h1>
   </header>
 
-  <section class="welcome">
-    <h2>Welcome to Kontagora Group</h2>
-    <p>Where Trust Meets Real Estate.</p>
-  </section>
-
-  <div class="search-bar">
-    <input type="text" id="search" placeholder="Search listings by title or details..." oninput="filterListings()" />
-  </div>
-
-  <div id="listings"></div>
+  <div class="container" id="listings">Loading listings...</div>
 
   <script>
-    const SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzcsslXauMn16M5865IG0Ur9ZLeUt6V3QHgF__lW5uJwRlwcOZFJU5LY03p4S-9PJZC5A/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbzcsslXauMn16M5865IG0Ur9ZLeUt6V3QHgF__lW5uJwRlwcOZFJU5LY03p4S-9PJZC5A/exec";
 
-    async function loadListings() {
-      try {
-        const response = await fetch(SHEET_WEB_APP_URL);
-        const listings = await response.json();
+    fetch(API_URL)
+      .then(res => res.json())
+      .then(data => {
+        const container = document.getElementById("listings");
+        container.innerHTML = "";
 
-        const container = document.getElementById('listings');
-        container.innerHTML = '';
+        if (!Array.isArray(data) || data.length === 0) {
+          container.innerHTML = "<p class='error'>No listings found.</p>";
+          return;
+        }
 
-        listings.forEach(listing => {
-          const detailsArray = listing.details
-            ? listing.details.split(',').map(item => `<li>${item.trim()}</li>`).join('')
-            : '';
+        data.forEach(item => {
+          const card = document.createElement("div");
+          card.className = "card";
 
-          const imageGallery = listing.imageurls
-            ? listing.imageurls.split(',').map(src => `<img src="${src.trim()}" onclick="openImage('${src.trim()}')">`).join('')
-            : '';
+          const detailsList = item.details
+            .split(",")
+            .map(d => `<li>${d.trim()}</li>`)
+            .join("");
 
-          const videoEmbed = listing.videourl && listing.videourl.trim()
-            ? `<div class="video">
-                <video controls>
-                  <source src="${listing.videourl.trim()}" type="video/mp4">
-                  Your browser does not support the video tag.
-                </video>
-              </div>`
-            : '';
+          const imageElements = item.imageurls
+            ? item.imageurls.split(",").map(url => `<img src="${url.trim()}" alt="Image">`).join("")
+            : "";
 
-          const html = `
-            <div class="listing">
-              <h2>${listing.title}</h2>
-              <ul class="details">${detailsArray}</ul>
-              <div class="images">${imageGallery}</div>
-              ${videoEmbed}
+          const videoElement = item.videourl
+            ? `<video controls src="${item.videourl.trim()}"></video>`
+            : "";
+
+          card.innerHTML = `
+            <h2>${item.title}</h2>
+            <ul class="details">${detailsList}</ul>
+            <div class="media">
+              ${imageElements}
+              ${videoElement}
             </div>
           `;
-          container.innerHTML += html;
+
+          container.appendChild(card);
         });
-      } catch (error) {
-        console.error("Error loading listings:", error);
-        document.getElementById('listings').innerHTML = "<p>Failed to load listings.</p>";
-      }
-    }
-
-    function openImage(src) {
-      const win = window.open();
-      win.document.write(`<img src="${src}" style="width:100%">`);
-    }
-
-    function filterListings() {
-      const query = document.getElementById("search").value.toLowerCase();
-      const listings = document.querySelectorAll(".listing");
-
-      listings.forEach(listing => {
-        const title = listing.querySelector("h2").textContent.toLowerCase();
-        const details = listing.querySelector(".details").textContent.toLowerCase();
-
-        if (title.includes(query) || details.includes(query)) {
-          listing.style.display = "";
-        } else {
-          listing.style.display = "none";
-        }
+      })
+      .catch(err => {
+        console.error(err);
+        document.getElementById("listings").innerHTML = "<p class='error'>❌ Failed to load listings.</p>";
       });
-    }
-
-    loadListings();
   </script>
 </body>
 </html>
-
 
 
