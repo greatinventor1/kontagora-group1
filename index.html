@@ -367,7 +367,321 @@
 </body>
 </html>
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Keep all existing head content the same -->
+  <style>
+    /* Add these new styles to your existing CSS */
+    
+    /* Tab Content Styles */
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.5s;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    /* About Us Styles */
+    .about-content {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 30px;
+      margin-top: 40px;
+    }
+    
+    .team-member {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    /* Contact Form Styles */
+    .contact-form {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-family: 'Open Sans', sans-serif;
+    }
+    
+    .form-group textarea {
+      min-height: 150px;
+    }
+    
+    .submit-btn {
+      background: #f5a623;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    
+    /* Properties Page Enhancements */
+    .filter-controls {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+    
+    .active-tab {
+      border-bottom: 2px solid #f5a623;
+    }
+  </style>
+</head>
+<body>
+  <!-- Keep all existing top-bar, logo, etc. -->
 
+  <nav>
+    <ul class="nav-links">
+      <li><a href="#" class="nav-link" data-tab="home">Home</a></li>
+      <li><a href="#" class="nav-link" data-tab="properties">Properties</a></li>
+      <li><a href="#" class="nav-link" data-tab="about">About Us</a></li>
+      <li><a href="#" class="nav-link" data-tab="contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- Home Tab Content -->
+  <div id="home-tab" class="tab-content active">
+    <!-- Keep all your existing hero, search, and featured properties content -->
+    <div class="hero">
+      <h1>Find Your Dream Home Today</h1>
+    </div>
+
+    <div class="search-box">
+      <h2 class="search-title">Find Your Home</h2>
+      <!-- ... rest of your home content ... -->
+    </div>
+  </div>
+
+  <!-- Properties Tab Content -->
+  <div id="properties-tab" class="tab-content">
+    <div class="container">
+      <h2 class="section-title">All Properties</h2>
+      <p class="section-subtitle">Browse our complete collection</p>
+      
+      <div class="filter-controls">
+        <select id="type-filter">
+          <option value="">All Types</option>
+          <option>House</option>
+          <option>Apartment</option>
+          <option>Condo</option>
+        </select>
+        
+        <select id="bedrooms-filter">
+          <option value="">Any Bedrooms</option>
+          <option>1+</option>
+          <option>2+</option>
+          <option>3+</option>
+          <option>4+</option>
+        </select>
+        
+        <input type="text" id="location-filter" placeholder="Filter by location">
+      </div>
+      
+      <div class="property-grid" id="all-listings">
+        <!-- Properties will load here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- About Us Tab Content -->
+  <div id="about-tab" class="tab-content">
+    <div class="container">
+      <div class="about-content">
+        <h2 class="section-title">About Kontagora Group</h2>
+        <p class="section-subtitle">Your trusted real estate partners</p>
+        
+        <p>Founded in 2010, Kontagora Group has been helping clients find their dream homes with personalized service and expert market knowledge. We specialize in residential and commercial properties across the region.</p>
+        
+        <h3>Our Mission</h3>
+        <p>To provide exceptional real estate services through integrity, professionalism, and attention to our clients' unique needs.</p>
+        
+        <h3>Our Team</h3>
+        <div class="team-grid">
+          <div class="team-member">
+            <h4>John Smith</h4>
+            <p>Founder & CEO</p>
+            <p>20+ years experience in luxury real estate</p>
+          </div>
+          <div class="team-member">
+            <h4>Sarah Johnson</h4>
+            <p>Lead Agent</p>
+            <p>Specialist in commercial properties</p>
+          </div>
+          <div class="team-member">
+            <h4>Michael Brown</h4>
+            <p>Marketing Director</p>
+            <p>Digital marketing expert</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contact Tab Content -->
+  <div id="contact-tab" class="tab-content">
+    <div class="container">
+      <h2 class="section-title">Contact Us</h2>
+      <p class="section-subtitle">We'd love to hear from you</p>
+      
+      <div class="contact-form">
+        <div class="form-group">
+          <label for="name">Your Name</label>
+          <input type="text" id="name" placeholder="Enter your name">
+        </div>
+        
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" placeholder="Enter your email">
+        </div>
+        
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" placeholder="Enter your phone">
+        </div>
+        
+        <div class="form-group">
+          <label for="subject">Subject</label>
+          <select id="subject">
+            <option>General Inquiry</option>
+            <option>Property Viewing</option>
+            <option>List My Property</option>
+            <option>Other</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="message">Message</label>
+          <textarea id="message" placeholder="Enter your message"></textarea>
+        </div>
+        
+        <button class="submit-btn">Send Message</button>
+      </div>
+      
+      <div class="contact-info" style="margin-top: 50px; text-align: center;">
+        <h3>Visit Our Office</h3>
+        <p>123 Real Estate Avenue<br>New York, NY 10001</p>
+        
+        <h3>Contact Information</h3>
+        <p>Phone: 123-111-2222<br>
+        Email: info@kontagoragroup.com<br>
+        Hours: Mon-Fri 9am-6pm</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Keep your existing loadListings function
+    
+    // Add this new tab functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      // Tab switching functionality
+      const navLinks = document.querySelectorAll('.nav-link');
+      
+      navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          const tabId = this.getAttribute('data-tab');
+          
+          // Remove active class from all tabs and links
+          document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+          });
+          
+          navLinks.forEach(link => {
+            link.classList.remove('active-tab');
+          });
+          
+          // Add active class to clicked tab and link
+          document.getElementById(`${tabId}-tab`).classList.add('active');
+          this.classList.add('active-tab');
+          
+          // Load listings if on properties tab
+          if (tabId === 'properties') {
+            loadAllListings();
+          }
+        });
+      });
+      
+      // Function to load all listings for properties page
+      async function loadAllListings() {
+        try {
+          const response = await fetch(API_URL);
+          if (!response.ok) throw new Error("Network response was not ok");
+          
+          const data = await response.json();
+          const container = document.getElementById("all-listings");
+          
+          if (!Array.isArray(data) || data.length === 0) {
+            container.innerHTML = "<p class='error'>No listings found.</p>";
+            return;
+          }
+
+          container.innerHTML = data.map(property => `
+            <div class="property-card">
+              <div class="property-image" style="background-image: url('${property.imageurls?.split(',')[0]?.trim() || 'https://via.placeholder.com/400x300'}')"></div>
+              <div class="property-info">
+                <h3 class="property-address">${property.title || 'Property Address'}</h3>
+                <p class="property-location">${property.location || 'Location not specified'}</p>
+                <p class="property-price">${property.price || 'Price not available'}</p>
+                <div class="property-features">
+                  <span class="feature"><i>🏠</i> ${property.propertyType || 'N/A'}</span>
+                  <span class="feature"><i>🛏️</i> ${property.bedrooms || 'N/A'} bedrooms</span>
+                </div>
+                <button class="submit-btn" style="margin-top: 15px;">View Details</button>
+              </div>
+            </div>
+          `).join('');
+          
+        } catch (error) {
+          console.error("Error loading listings:", error);
+          document.getElementById("all-listings").innerHTML = `
+            <p class="error">❌ Failed to load listings. Please try again later.</p>
+          `;
+        }
+      }
+      
+      // Initialize home tab as active
+      document.querySelector('.nav-link[data-tab="home"]').classList.add('active-tab');
+    });
+  </script>
+</body>
+</html>
 
 
 
